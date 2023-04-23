@@ -7,26 +7,13 @@ from project.server.models import User, BlacklistToken, Cameras
 
 thread_cam_blueprint = Blueprint('thread_cam', __name__)
 
-def gen(camera_stream, feed_type, topic):
+def gen(camera):
     """Video streaming generator function."""
-    unique_name = (feed_type, topic)
-
-    num_frames = 0
-    total_time = 0
+    yield b'--frame\r\n'
     while True:
-        time_start = time.time()
+        frame = camera.get_frame()
+        yield b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n--frame\r\n'
 
-        cam_id, frame = camera_stream.get_frame(unique_name)
-        if frame is None:
-            break
-
-        num_frames += 1
-
-        time_now = time.time()
-        total_time += time_now - time_start
-        fps = num_frames / total_time
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
 # class DisplayAPI(MethodView):
