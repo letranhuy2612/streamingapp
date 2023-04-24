@@ -3,6 +3,7 @@ import random
 from kafka import KafkaProducer
 import json
 from time import sleep
+import time
 fake = Faker()
 
 # Tạo danh sách các nhãn
@@ -45,7 +46,7 @@ for i in range(100):
     }
     faces.append(face)
 
-print(faces)
+# print(faces)
 producer = KafkaProducer(
     bootstrap_servers='localhost:9092',
     # Encode all values as JSON
@@ -53,5 +54,5 @@ producer = KafkaProducer(
 )
 for i in faces:
   producer.send('testing', value=i)
-  print(i)  # DEBUG
+  print(i+ time.ctime(time.time()))  # DEBUG
   sleep(1)

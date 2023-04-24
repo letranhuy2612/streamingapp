@@ -1,5 +1,6 @@
 from kafka import KafkaConsumer
 import json
+import time
 
 consumer = KafkaConsumer(
     'testing',
@@ -9,5 +10,5 @@ consumer = KafkaConsumer(
 for message in consumer:
     message = message.value
     print('---------------------------------------')
-    print(message)
+    print(str(message)+ '\nTimestamp:'+str(time.ctime(time.time()))) 
 
