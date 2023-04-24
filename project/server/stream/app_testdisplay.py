@@ -4,6 +4,7 @@ from flask import Flask, render_template, Response
 from threading import get_ident
 import time
 import threading
+import imutils
 
 class CameraEvent:
     """thông báo cho tất cả các client đang kết nối khi có một khung hình mới."""
@@ -25,7 +26,7 @@ class CameraEvent:
         now = time.time()
         remove = None
         for ident, event in self.events.items():
-            if not event[0].isSet():
+            if not event[0].is_set():
                 # Nếu event của client này chưa được set, thì set nó
                 # Cập nhật thời điểm timestamp mới nhất thành hiện tại
                 event[0].set()
@@ -81,29 +82,25 @@ class BaseCamera(object):
 	def _thread(cls):
 		"""Camera background thread."""
 		print('Starting camera thread.')
-		print('timestart:',time.time())
+		print('Time Start:',time.ctime(time.time()))
 		frames_iterator = cls.frames()
-		try:
-			for frame in frames_iterator:
-				BaseCamera.frame = frame
-				BaseCamera.event.set()  # send signal to clients
-				time.sleep(0)
+		for frame in frames_iterator:
+			BaseCamera.frame = frame
+			BaseCamera.event.set()  # send signal to clients
+			time.sleep(0)
 
 				# if there hasn't been any clients asking for frames in
 				# the last 10 seconds then stop the thread
-				if time.time() - BaseCamera.last_access > 10:
-					frames_iterator.close()
-					print('Stopping camera thread due to inactivity.')
-					break
-			BaseCamera.thread = None
-		except:
-			print("vào day:",time.time())            
-			exit
+			if time.time() - BaseCamera.last_access > 10:
+				frames_iterator.close()
+				print('Stopping camera thread due to inactivity.')
+				break
+		BaseCamera.thread = None
 class Camera(BaseCamera):
     video_source = 0
 
-    def __init__(self):
-        Camera.set_video_source('D:/Workspace/Vehicle_detection/highway.mp4')
+    def __init__(self,source):
+        Camera.set_video_source(source)
         super(Camera, self).__init__()
 
     @staticmethod
@@ -112,25 +109,28 @@ class Camera(BaseCamera):
 
     @staticmethod
     def frames():
-        camera = cv2.VideoCapture(Camera.video_source)
-        fps = int(camera.get(cv2.CAP_PROP_FPS))
-        print(fps)
-        if not camera.isOpened():
-            raise RuntimeError('Could not start camera.')
-
-        while True:
-            # read current frame
-            _, img = camera.read()
-            # encode as a jpeg image and return it
-            yield cv2.imencode('.jpg', img)[1].tobytes()
-
+        try:
+            camera = cv2.VideoCapture(Camera.video_source)
+            fps = int(camera.get(cv2.CAP_PROP_FPS))
+            print('FPS opencv:',fps)
+            if not camera.isOpened():
+                raise RuntimeError('Could not start camera.')
+            while True:
+                # read current frame
+                _, img = camera.read()
+                img = imutils.resize(img,width=640,height=640)
+                # encode as a jpeg image and return it
+                yield cv2.imencode('.jpg', img)[1].tobytes()
+        except:
+            print('Time End:',time.ctime(time.time()))
+            print('Stop!!!!')
 app = Flask(__name__)
 
 
 @app.route('/')
 def index():
     """Video streaming home page."""
-    return Response(gen(Camera()),
+    return Response(gen(Camera(source='/home/huyle/yolov4-deepsort/data/video/test.mp4')),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
