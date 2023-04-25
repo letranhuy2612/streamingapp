@@ -1,0 +1,24 @@
+# docker-compose.yml
+version: '3.3'
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+   volumes:
+      - /data/zookeeper:/opt/zookeeper*
+  kafka:
+   image: wurstmeister/kafka
+    ports:
+      - "9092-9094:9092"
+    environment:
+      HOSTNAME_COMMAND: "echo $$(hostname)"
+      BROKER_ID_COMMAND: "docker inspect --format '{{ .Name }}' $$(hostname) | awk -F_ '{ printf $$NF }'"
+      KAFKA_ADVERTISED_HOST_NAME: <ip-address>
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "Topic1:3:2,Topic2:2:2"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /data/kafka:/kafka
+    depends_on:
+      - zookeeper
