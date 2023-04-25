@@ -127,8 +127,8 @@ class Camera(BaseCamera):
 app = Flask(__name__)
 
 
-@app.route('/')
-def index():
+@app.route('/video_feed')
+def video_feed():
     """Video streaming home page."""
     return Response(gen(Camera(source='/home/huyle/yolov4-deepsort/data/video/test.mp4')),
                     mimetype='multipart/x-mixed-replace; boundary=frame')

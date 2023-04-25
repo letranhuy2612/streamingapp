@@ -169,7 +169,6 @@ class AddcamAPI(MethodView):
                         password=post_data.get('password'),
                         address=post_data.get('address'),
                         port = post_data.get('port'),
-                        sub_chanel =bool(post_data.get('sub_chanel')),
                         user_id=current_user.id
                     )
                     # insert the camera

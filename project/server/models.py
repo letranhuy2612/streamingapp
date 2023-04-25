@@ -94,4 +94,3 @@ class Cameras(db.Model):
     password = db.Column(db.String(50), nullable=False)
     address = db.Column(db.String(50), nullable=False)
     port = db.Column(db.Integer(), nullable=False)
-    sub_chanel = db.Column(db.Boolean, nullable=False, default=False)
